@@ -23,7 +23,7 @@ All notable changes to BuffMonitor are documented here. The project prioritizes 
 - Fixed controller appearing twice in results
 - Fixed race conditions from self-targeted E3 broadcasts
 
-### 📝 Architecture Notes
+### Architecture Notes
 This version represents the final intended design:
 - Controller checks itself locally
 - Group members respond via short-lived scripts
