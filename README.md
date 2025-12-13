@@ -1,205 +1,131 @@
-BuffMonitor (Project Lazarus)
+# BuffMonitor (Project Lazarus)
 
-BuffMonitor is a controller-driven buff auditing tool designed specifically for the Project Lazarus EverQuest EMU server, built to work reliably with:
+A controller-driven buff auditing tool for the Project Lazarus EverQuest EMU server.
 
-MacroQuest MQNext (MQ2Mono)
+## What It Does
 
-E3Next
+BuffMonitor lets one character check whether specific buffs are active on all group members. Instead of running background scripts on everyone, it works on-demand: you click a button, and each character quickly reports their buff status.
 
-Lazarus-compatible ImGui bindings
+## Compatible With
 
-It allows a single controller character to query group members on demand and report whether selected buffs are present or missing, without requiring persistent background scripts on every toon.
+- MacroQuest MQNext (MQ2Mono)
+- E3Next
+- Lazarus-compatible ImGui bindings
 
-Design Goals
+---
 
-BuffMonitor is designed to operate within the intended behavior and constraints of the Project Lazarus MQNext environment:
+## How It Works
 
-Respect server-side visibility rules
+**Two Simple Scripts:**
 
-Avoid assumptions about shared group state
+1. **Dashboard (Controller)** - Runs on your main character
+   - Shows a simple interface
+   - Manages which buffs to check
+   - Sends requests to the group
 
-Favor explicit execution over background polling
+2. **Agent (Responder)** - Runs briefly on each character when asked
+   - Checks that character's buffs
+   - Reports back
+   - Exits immediately
 
-Minimize long-running automation
+**The Process:**
 
-Maintain UI stability and predictability
+1. You select which buffs to monitor
+2. Click "Ask Group to Check"
+3. Each group member checks their own buffs and reports
+4. Results appear in your chat
 
-The result is a tool that is reliable, lightweight, and restart-safe, even during zoning, relogs, or MacroQuest restarts.
+No background monitoring. No persistent scripts. Just quick, on-demand checks.
 
-Architecture Overview
+---
 
-BuffMonitor consists of two Lua scripts, each with a clearly defined role:
+## Key Features
 
-buffmonitor_dashboard.lua (Controller)
+- **Controller-only execution** - Only your main character runs the full tool
+- **Batched checks** - One broadcast triggers everyone at once
+- **Persistent settings** - Your buff list saves automatically
+- **Optional filtering** - Hide "buff active" messages, show only missing buffs
+- **Restart-safe** - Works reliably through zoning, relogs, and MacroQuest restarts
+- **No popups** - Clean, stable interface
 
-Runs on one designated controller toon
+---
 
-Provides a simple ImGui interface
+## Requirements
 
-Manages:
+- Project Lazarus server
+- MacroQuest MQNext (MQ2Mono)
+- E3Next running on all group members
+- Characters must be grouped and in command range
 
-Buff list configuration
+---
 
-Enable/disable state per buff
+## Installation
 
-User options
+1. Copy both files to your MQ lua directory:
+   - `buffmonitor_dashboard.lua`
+   - `buffmonitor_agent.lua`
 
-Persistent saved state
+2. Make sure E3Next is running on all characters
 
-Uses E3 to request buff checks from group members
+3. On your controller character, type:
+   ```
+   /lua run buffmonitor_dashboard
+   ```
 
-buffmonitor_agent.lua (Responder)
+---
 
-Executes only when requested
+## Usage
 
-Runs locally on each toon via E3
+### Adding Buffs to Monitor
 
-Checks that toon’s own buff slots
+1. Type a buff name in the input field
+2. Click **Add**
+3. Click **Save Changes** to keep it
 
-Reports results
+### Checking Your Group
 
-Exits immediately after completion
+Click **Ask Group to Check** - everyone will report their status immediately
 
-No responder runs continuously, and no background monitoring is performed.
+### Managing Your Buff List
 
-How It Works
+- **Enable/disable** individual buffs without deleting them
+- **Delete** buffs you no longer need
+- **Save Changes** to persist your configuration
 
-The controller selects which buffs to check.
+### Options
 
-The controller initiates a group check.
+- **Only report MISSING buffs** - Suppresses "buff active" messages to reduce spam
 
-A single E3 broadcast triggers the responder on each group member.
+---
 
-Each toon:
+## Where Settings Are Saved
 
-Evaluates its own buffs locally
+Configuration file: `<MQ Config Directory>/buffmonitor_buffs.lua`
 
-Reports results
+This includes:
+- Your buff list
+- Which buffs are enabled
+- Your options
 
-Exits cleanly
+The script handles missing or corrupted files gracefully.
 
-This model aligns well with Lazarus gameplay, zoning behavior, and MacroQuest usage patterns.
+---
 
-Features
+## Design Philosophy
 
-Controller-only execution
+BuffMonitor respects Project Lazarus's environment by:
 
-Batched buff checks (single E3 broadcast)
+- **Using local checks only** - Each character checks their own buffs
+- **Avoiding background polling** - Scripts run briefly, then exit
+- **Working with server rules** - Respects visibility and automation boundaries
+- **Staying predictable** - Explicit actions, no surprises
 
-Add, delete, enable, and disable buffs
+This keeps things stable, reliable, and compatible with normal gameplay.
 
-Explicit save and persistent configuration
+---
 
-Optional “Only report MISSING buffs” mode
+## Credits
 
-Lazarus-compatible ImGui usage
-
-No popups or modal windows
-
-Stable across EQ and MacroQuest restarts
-
-Requirements
-
-Project Lazarus server
-
-MacroQuest MQNext (MQ2Mono)
-
-E3Next running on all group members
-
-Characters grouped and within command range
-
-Installation
-
-Copy the following files into your MQ lua directory:
-
-buffmonitor_dashboard.lua
-buffmonitor_agent.lua
-
-
-Ensure E3Next is running on all toons.
-
-On the controller character, run:
-
-/lua run buffmonitor_dashboard
-
-Usage
-Managing Buffs
-
-Enter a buff name and click Add
-
-Enable or disable buffs individually
-
-Click Save Changes to persist configuration
-
-Checking Buffs
-
-Click Ask Group to Check
-
-Group members will report their buff status
-
-Options
-
-Only report MISSING buffs suppresses “ACTIVE” messages
-
-Buffs can be stored without being checked
-
-All settings persist across restarts
-
-Persistence
-
-Configuration is stored at:
-
-<MQ Config Directory>/buffmonitor_buffs.lua
-
-
-The file includes:
-
-Buff definitions
-
-Enable/disable flags
-
-User options
-
-The script safely handles missing or invalid configuration files.
-
-Scope and Limitations
-
-BuffMonitor intentionally:
-
-Checks buffs only on the toon executing the responder
-
-Avoids group-wide polling or shared state assumptions
-
-Avoids persistent background monitoring
-
-These choices prioritize stability, clarity, and compatibility within the Lazarus environment.
-
-Logging
-
-On execution, scripts log:
-
-Author credit
-
-Script version
-
-Startup confirmation
-
-Responder logs provide confirmation that remote execution occurred on each toon.
-
-Rationale
-
-Project Lazarus provides a rich and flexible EMU environment with clear boundaries around visibility and automation. BuffMonitor is designed to work comfortably within those boundaries by:
-
-Using E3 for explicit coordination
-
-Performing checks locally
-
-Keeping automation short-lived and predictable
-
-This approach helps ensure consistent behavior without interfering with gameplay or server expectations.
-
-License / Attribution
-
-Originally created by Alektra <Lederhosen>
-
-Intended for use on the Project Lazarus EverQuest EMU server.
+**Created by:** Alektra <Lederhosen>  
+**For:** Project Lazarus EverQuest EMU Server  
+**Support:** https://buymeacoffee.com/shablagu
