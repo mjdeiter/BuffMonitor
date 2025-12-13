@@ -47,7 +47,10 @@ local function saveState()
     f:write("  },\n")
     f:write("  removeBuffs = {\n")
     for _, r in ipairs(state.removeBuffs) do
-        f:write(string.format("    %q,\n", r))
+        f:write(string.format(
+            "    { name = %q, enabled = %s },\n",
+            r.name, tostring(r.enabled)
+        ))
     end
     f:write("  }\n}\n")
     f:close()
@@ -62,7 +65,18 @@ local function loadState()
     if ok and type(data) == "table" then
         state.onlyMissing = data.onlyMissing ~= false
         state.buffs = data.buffs or {}
-        state.removeBuffs = data.removeBuffs or {}
+        
+        -- Handle legacy format (array of strings)
+        if data.removeBuffs then
+            state.removeBuffs = {}
+            for _, item in ipairs(data.removeBuffs) do
+                if type(item) == "string" then
+                    table.insert(state.removeBuffs, { name = item, enabled = false })
+                elseif type(item) == "table" and item.name then
+                    table.insert(state.removeBuffs, item)
+                end
+            end
+        end
     end
 end
 
@@ -88,7 +102,7 @@ end
 local function removeBuffExists(name)
     local n = name:lower()
     for _, r in ipairs(state.removeBuffs) do
-        if r:lower() == n then return true end
+        if r.name:lower() == n then return true end
     end
     return false
 end
@@ -147,6 +161,23 @@ end
 local function removeBuffFromGroup(buffName)
     mq.cmdf('/noparse /e3bcga /removebuff "%s"', buffName)
     mq.cmdf('/g BuffMonitor: Removing [%s] from group', buffName)
+end
+
+local function removeSelectedBuffs()
+    local selected = {}
+    for _, r in ipairs(state.removeBuffs) do
+        if r.enabled then
+            table.insert(selected, r.name)
+        end
+    end
+    
+    if #selected == 0 then return end
+    
+    mq.cmdf('/g BuffMonitor: Removing %d buff(s) from group', #selected)
+    
+    -- Batched removal via agent
+    local payload = "__REMOVE|" .. table.concat(selected, "|")
+    mq.cmdf('/noparse /e3bcga /lua run buffmonitor_agent "%s"', payload)
 end
 
 ------------------------------------------------------------
@@ -219,7 +250,7 @@ local function renderUI()
     if ImGui.Button("Add##removebuff") then
         local rb = trim(state.removeInput)
         if rb and not removeBuffExists(rb) then
-            table.insert(state.removeBuffs, rb)
+            table.insert(state.removeBuffs, { name = rb, enabled = false })
             state.dirty = true
         end
         state.removeInput = ""
@@ -229,19 +260,31 @@ local function renderUI()
     ImGui.Text("Stored remove buffs:")
 
     for i = #state.removeBuffs, 1, -1 do
-        local buffName = state.removeBuffs[i]
-        if ImGui.Button("Remove##rb" .. i) then
-            removeBuffFromGroup(buffName)
+        local r = state.removeBuffs[i]
+        local c = ImGui.Checkbox("##rb" .. i, r.enabled)
+        if type(c) == "boolean" and c ~= r.enabled then
+            r.enabled = c
+            state.dirty = true
         end
 
         ImGui.SameLine()
-        ImGui.Text(buffName)
+        if ImGui.SmallButton("Remove##rb" .. i) then
+            removeBuffFromGroup(r.name)
+        end
+
+        ImGui.SameLine()
+        ImGui.Text(r.name)
 
         ImGui.SameLine()
         if ImGui.SmallButton("Delete##rb" .. i) then
             table.remove(state.removeBuffs, i)
             state.dirty = true
         end
+    end
+
+    ImGui.Separator()
+    if ImGui.Button("Remove Selected") then
+        removeSelectedBuffs()
     end
 
     ImGui.End()
