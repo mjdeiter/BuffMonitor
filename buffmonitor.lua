@@ -9,7 +9,7 @@
 local mq    = require('mq')
 local ImGui = require('ImGui')
 
-local SCRIPT_VERSION = "1.5.0"
+local SCRIPT_VERSION = "1.6.0"
 local CONFIG_PATH = mq.configDir .. "/buffmonitor_buffs.lua"
 
 print("\atOriginally created by Alektra <Lederhosen>")
