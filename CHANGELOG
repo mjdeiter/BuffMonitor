@@ -1,130 +1,131 @@
-Changelog
+# BuffMonitor (Project Lazarus)
 
-All notable changes to BuffMonitor will be documented in this file.
+A controller-driven buff auditing tool for the Project Lazarus EverQuest EMU server.
 
-The project follows a pragmatic versioning approach focused on stability and compatibility with Project Lazarus, rather than strict semantic versioning.
+## What It Does
 
-[1.4.3] – Stable Release
-Controller-safe execution and duplicate report fix
-Added
+BuffMonitor lets one character check whether specific buffs are active on all group members. Instead of running background scripts on everyone, it works on-demand: you click a button, and each character quickly reports their buff status.
 
-Controller-local buff checking to guarantee consistent self-reporting
+## Compatible With
 
-Batched buff checks using a single E3 broadcast
+- MacroQuest MQNext (MQ2Mono)
+- E3Next
+- Lazarus-compatible ImGui bindings
 
-Optional Only report MISSING buffs setting
+---
 
-Persistent configuration for:
+## How It Works
 
-Buff list
+**Two Simple Scripts:**
 
-Enabled/disabled state
+1. **Dashboard (Controller)** - Runs on your main character
+   - Shows a simple interface
+   - Manages which buffs to check
+   - Sends requests to the group
 
-User options
+2. **Agent (Responder)** - Runs briefly on each character when asked
+   - Checks that character's buffs
+   - Reports back
+   - Exits immediately
 
-Changed
+**The Process:**
 
-Switched E3 broadcast command from /e3bcga to /e3bcg
+1. You select which buffs to monitor
+2. Click "Ask Group to Check"
+3. Each group member checks their own buffs and reports
+4. Results appear in your chat
 
-Ensures responder scripts execute on group members excluding the controller
+No background monitoring. No persistent scripts. Just quick, on-demand checks.
 
-Eliminates duplicate controller output
+---
 
-Consolidated buff checks into a single responder execution per toon
+## Key Features
 
-Improved output clarity while minimizing group chat noise
+- **Controller-only execution** - Only your main character runs the full tool
+- **Batched checks** - One broadcast triggers everyone at once
+- **Persistent settings** - Your buff list saves automatically
+- **Optional filtering** - Hide "buff active" messages, show only missing buffs
+- **Restart-safe** - Works reliably through zoning, relogs, and MacroQuest restarts
+- **No popups** - Clean, stable interface
 
-Fixed
+---
 
-Intermittent controller non-reporting caused by MQNext Lua concurrency behavior
+## Requirements
 
-Duplicate controller output when combining local checks with E3 execution
+- Project Lazarus server
+- MacroQuest MQNext (MQ2Mono)
+- E3Next running on all group members
+- Characters must be grouped and in command range
 
-Race conditions caused by self-targeted E3 broadcasts
+---
 
-Notes
+## Installation
 
-This version represents the intended final architecture:
+1. Copy both files to your MQ lua directory:
+   - `buffmonitor_dashboard.lua`
+   - `buffmonitor_agent.lua`
 
-Controller performs authoritative self-check
+2. Make sure E3Next is running on all characters
 
-Group members respond via short-lived responder scripts
+3. On your controller character, type:
+   ```
+   /lua run buffmonitor_dashboard
+   ```
 
-No background agents
+---
 
-No reliance on group-wide visibility assumptions
+## Usage
 
-[1.4.0 – 1.4.2] – Iteration and Refinement
-Added
+### Adding Buffs to Monitor
 
-Batched buff checking support
+1. Type a buff name in the input field
+2. Click **Add**
+3. Click **Save Changes** to keep it
 
-User-selectable output suppression for ACTIVE buffs
+### Checking Your Group
 
-Improved persistence handling
+Click **Ask Group to Check** - everyone will report their status immediately
 
-Changed
+### Managing Your Buff List
 
-Refined responder argument parsing
+- **Enable/disable** individual buffs without deleting them
+- **Delete** buffs you no longer need
+- **Save Changes** to persist your configuration
 
-Improved ImGui state handling for Lazarus compatibility
+### Options
 
-Fixed
+- **Only report MISSING buffs** - Suppresses "buff active" messages to reduce spam
 
-Checkbox state snapping caused by Lazarus ImGui return semantics
+---
 
-Unintended state mutation inside render loops
+## Where Settings Are Saved
 
-[1.3.0] – Batched Responder Support
-Added
+Configuration file: `<MQ Config Directory>/buffmonitor_buffs.lua`
 
-Support for checking multiple buffs in a single responder execution
+This includes:
+- Your buff list
+- Which buffs are enabled
+- Your options
 
-Reduced E3 command volume
+The script handles missing or corrupted files gracefully.
 
-Changed
+---
 
-Reworked driver-to-agent communication to use delimited payloads
+## Design Philosophy
 
-[1.2.x] – Persistence and UI Stability
-Added
+BuffMonitor respects Project Lazarus's environment by:
 
-Persistent saved buff list
+- **Using local checks only** - Each character checks their own buffs
+- **Avoiding background polling** - Scripts run briefly, then exit
+- **Working with server rules** - Respects visibility and automation boundaries
+- **Staying predictable** - Explicit actions, no surprises
 
-Enable/disable toggle per buff
+This keeps things stable, reliable, and compatible with normal gameplay.
 
-Explicit save controls
+---
 
-Fixed
+## Credits
 
-Buff list wiping caused by InputText buffer behavior
-
-Checkbox state instability in Lazarus ImGui
-
-[1.0.0] – Initial Release
-Added
-
-Basic buff monitoring via group queries
-
-Simple ImGui interface
-
-Agent-based buff checking
-
-Design Summary
-
-BuffMonitor intentionally:
-
-Avoids persistent background monitoring
-
-Uses explicit remote execution via E3
-
-Performs buff checks locally on each toon
-
-Minimizes ImGui complexity for Lazarus stability
-
-This approach ensures reliable behavior across zoning, relogs, and MacroQuest restarts.
-
-Attribution
-
-Originally created by Alektra <Lederhosen>
-Developed and tested on the Project Lazarus EverQuest EMU server
+**Created by:** Alektra <Lederhosen>  
+**For:** Project Lazarus EverQuest EMU Server  
+**Support:** https://buymeacoffee.com/shablagu
