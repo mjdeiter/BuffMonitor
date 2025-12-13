@@ -62,7 +62,7 @@ No background monitoring. No persistent scripts. Just quick, on-demand checks.
 ## Installation
 
 1. Copy both files to your MQ lua directory:
-   - `buffmonitor_dashboard.lua`
+   - `buffmonitor.lua`
    - `buffmonitor_agent.lua`
 
 2. Make sure E3Next is running on all characters
