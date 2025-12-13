@@ -3,13 +3,13 @@
 -- Project Lazarus EMU / MQNext
 --
 -- Controller-driven Buff Monitor
--- Uses /e3bcg to exclude controller (NO double reports)
+-- Uses /e3bcg to exclude controller
 --==============================================================
 
 local mq    = require('mq')
 local ImGui = require('ImGui')
 
-local SCRIPT_VERSION = "1.4.3"
+local SCRIPT_VERSION = "1.5.0"
 local CONFIG_PATH = mq.configDir .. "/buffmonitor_buffs.lua"
 
 print("\atOriginally created by Alektra <Lederhosen>")
@@ -21,7 +21,9 @@ print("\agBuffMonitor v" .. SCRIPT_VERSION .. " Loaded")
 local state = {
     open = true,
     buffs = {},
+    removeBuffs = {},
     input = "",
+    removeInput = "",
     onlyMissing = true,
     dirty = false,
 }
@@ -42,6 +44,11 @@ local function saveState()
             b.name, tostring(b.enabled)
         ))
     end
+    f:write("  },\n")
+    f:write("  removeBuffs = {\n")
+    for _, r in ipairs(state.removeBuffs) do
+        f:write(string.format("    %q,\n", r))
+    end
     f:write("  }\n}\n")
     f:close()
     state.dirty = false
@@ -55,6 +62,7 @@ local function loadState()
     if ok and type(data) == "table" then
         state.onlyMissing = data.onlyMissing ~= false
         state.buffs = data.buffs or {}
+        state.removeBuffs = data.removeBuffs or {}
     end
 end
 
@@ -73,6 +81,14 @@ local function buffExists(name)
     local n = name:lower()
     for _, b in ipairs(state.buffs) do
         if b.name:lower() == n then return true end
+    end
+    return false
+end
+
+local function removeBuffExists(name)
+    local n = name:lower()
+    for _, r in ipairs(state.removeBuffs) do
+        if r:lower() == n then return true end
     end
     return false
 end
@@ -123,6 +139,14 @@ local function askGroup()
         '/noparse /e3bcg /lua run buffmonitor_agent "%s"',
         table.concat(enabled, "|")
     )
+end
+
+------------------------------------------------------------
+-- Remove buff from group
+------------------------------------------------------------
+local function removeBuffFromGroup(buffName)
+    mq.cmdf('/noparse /e3bcga /removebuff "%s"', buffName)
+    mq.cmdf('/g BuffMonitor: Removing [%s] from group', buffName)
 end
 
 ------------------------------------------------------------
@@ -183,6 +207,41 @@ local function renderUI()
 
     if state.dirty then
         ImGui.TextColored(1, 0.6, 0.2, 1, "Unsaved changes")
+    end
+
+    -- NEW SECTION: Remove Buff
+    ImGui.Separator()
+    ImGui.Text("Remove buff from group:")
+    local r = ImGui.InputText("##removebuffinput", state.removeInput)
+    if type(r) == "string" then state.removeInput = r end
+
+    ImGui.SameLine()
+    if ImGui.Button("Add##removebuff") then
+        local rb = trim(state.removeInput)
+        if rb and not removeBuffExists(rb) then
+            table.insert(state.removeBuffs, rb)
+            state.dirty = true
+        end
+        state.removeInput = ""
+    end
+
+    ImGui.Separator()
+    ImGui.Text("Stored remove buffs:")
+
+    for i = #state.removeBuffs, 1, -1 do
+        local buffName = state.removeBuffs[i]
+        if ImGui.Button("Remove##rb" .. i) then
+            removeBuffFromGroup(buffName)
+        end
+
+        ImGui.SameLine()
+        ImGui.Text(buffName)
+
+        ImGui.SameLine()
+        if ImGui.SmallButton("Delete##rb" .. i) then
+            table.remove(state.removeBuffs, i)
+            state.dirty = true
+        end
     end
 
     ImGui.End()
