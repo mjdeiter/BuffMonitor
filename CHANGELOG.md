@@ -1,6 +1,25 @@
 # BuffMonitor Changelog
-
 All notable changes to BuffMonitor are documented here. The project prioritizes stability and compatibility with Project Lazarus over strict semantic versioning.
+
+---
+
+## [1.5.0] – Remove Buff Feature
+**Group-wide buff removal with stored buff names**
+
+### What's New
+- **Remove Buff section** - Store buff names for quick group-wide removal
+- **One-click removal** - Execute `/e3bcga /removebuff "Buff Name"` from UI
+- **Persistent remove list** - Saved buff names survive script restarts
+- **Duplicate prevention** - Stored buff names are validated and deduplicated
+
+### Changes
+- Updated configuration file format to include `removeBuffs` array
+- Version bumped to 1.5.0
+
+### Architecture Notes
+- Remove buff feature uses `/e3bcga` (all group members including controller)
+- Stored buff names persist alongside tracked buffs in the same config file
+- UI layout preserved - new section added after existing controls
 
 ---
 
@@ -83,9 +102,7 @@ This version represents the final intended design:
 ---
 
 ## Design Philosophy
-
 BuffMonitor is intentionally built to:
-
 - **Avoid background monitoring** - Scripts run only when needed
 - **Use explicit E3 commands** - No hidden automation
 - **Check locally** - Each character checks their own buffs
@@ -96,6 +113,5 @@ This ensures reliable behavior through zoning, relogs, and MacroQuest restarts.
 ---
 
 ## Credits
-
 **Created by:** Alektra <Lederhosen>  
 **Developed for:** Project Lazarus EverQuest EMU Server
