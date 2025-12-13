@@ -3,21 +3,41 @@ All notable changes to BuffMonitor are documented here. The project prioritizes 
 
 ---
 
+## [1.6.0] – Batched Buff Removal
+**Checkbox selection and batched execution for remove buff feature**
+
+### What's New
+- **Checkbox selection** - Select multiple buffs for batched removal
+- **"Remove Selected" button** - Execute batched removal via single E3 broadcast
+- **Dual-mode agent** - `buffmonitor_agent.lua` v1.3.0 now handles both buff checking and removal
+
+### Changes
+- Updated configuration file format to include `enabled` states for remove buffs
+- Agent now detects mode via `__REMOVE|` prefix in payload
+- Legacy config migration - Converts old string arrays to new table format automatically
+
+### Architecture Notes
+- Batched removal uses `/e3bcga /lua run buffmonitor_agent "__REMOVE|Buff1|Buff2|..."` (one broadcast)
+- Agent detects mode and executes `/removebuff` locally on each group member
+- Zero agent duplication - Single responder handles both CHECK and REMOVE modes
+
+---
+
 ## [1.5.0] – Remove Buff Feature
 **Group-wide buff removal with stored buff names**
 
 ### What's New
 - **Remove Buff section** - Store buff names for quick group-wide removal
-- **One-click removal** - Execute `/e3bcga /removebuff "Buff Name"` from UI
+- **One-click removal** - Individual "Remove" buttons execute `/e3bcga /removebuff "Buff Name"`
 - **Persistent remove list** - Saved buff names survive script restarts
 - **Duplicate prevention** - Stored buff names are validated and deduplicated
 
 ### Changes
 - Updated configuration file format to include `removeBuffs` array
-- Version bumped to 1.5.0
+- Configuration stored in `<MQConfigDir>/buffmonitor_buffs.lua`
 
 ### Architecture Notes
-- Remove buff feature uses `/e3bcga` (all group members including controller)
+- Single buff removal uses `/e3bcga /removebuff "Buff Name"` (all group members including controller)
 - Stored buff names persist alongside tracked buffs in the same config file
 - UI layout preserved - new section added after existing controls
 
