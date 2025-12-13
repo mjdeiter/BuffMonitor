@@ -1,0 +1,130 @@
+Changelog
+
+All notable changes to BuffMonitor will be documented in this file.
+
+The project follows a pragmatic versioning approach focused on stability and compatibility with Project Lazarus, rather than strict semantic versioning.
+
+[1.4.3] – Stable Release
+Controller-safe execution and duplicate report fix
+Added
+
+Controller-local buff checking to guarantee consistent self-reporting
+
+Batched buff checks using a single E3 broadcast
+
+Optional Only report MISSING buffs setting
+
+Persistent configuration for:
+
+Buff list
+
+Enabled/disabled state
+
+User options
+
+Changed
+
+Switched E3 broadcast command from /e3bcga to /e3bcg
+
+Ensures responder scripts execute on group members excluding the controller
+
+Eliminates duplicate controller output
+
+Consolidated buff checks into a single responder execution per toon
+
+Improved output clarity while minimizing group chat noise
+
+Fixed
+
+Intermittent controller non-reporting caused by MQNext Lua concurrency behavior
+
+Duplicate controller output when combining local checks with E3 execution
+
+Race conditions caused by self-targeted E3 broadcasts
+
+Notes
+
+This version represents the intended final architecture:
+
+Controller performs authoritative self-check
+
+Group members respond via short-lived responder scripts
+
+No background agents
+
+No reliance on group-wide visibility assumptions
+
+[1.4.0 – 1.4.2] – Iteration and Refinement
+Added
+
+Batched buff checking support
+
+User-selectable output suppression for ACTIVE buffs
+
+Improved persistence handling
+
+Changed
+
+Refined responder argument parsing
+
+Improved ImGui state handling for Lazarus compatibility
+
+Fixed
+
+Checkbox state snapping caused by Lazarus ImGui return semantics
+
+Unintended state mutation inside render loops
+
+[1.3.0] – Batched Responder Support
+Added
+
+Support for checking multiple buffs in a single responder execution
+
+Reduced E3 command volume
+
+Changed
+
+Reworked driver-to-agent communication to use delimited payloads
+
+[1.2.x] – Persistence and UI Stability
+Added
+
+Persistent saved buff list
+
+Enable/disable toggle per buff
+
+Explicit save controls
+
+Fixed
+
+Buff list wiping caused by InputText buffer behavior
+
+Checkbox state instability in Lazarus ImGui
+
+[1.0.0] – Initial Release
+Added
+
+Basic buff monitoring via group queries
+
+Simple ImGui interface
+
+Agent-based buff checking
+
+Design Summary
+
+BuffMonitor intentionally:
+
+Avoids persistent background monitoring
+
+Uses explicit remote execution via E3
+
+Performs buff checks locally on each toon
+
+Minimizes ImGui complexity for Lazarus stability
+
+This approach ensures reliable behavior across zoning, relogs, and MacroQuest restarts.
+
+Attribution
+
+Originally created by Alektra <Lederhosen>
+Developed and tested on the Project Lazarus EverQuest EMU server
