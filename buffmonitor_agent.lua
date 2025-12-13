@@ -2,16 +2,15 @@
 -- buffmonitor_agent.lua
 -- Project Lazarus EMU / MQNext
 --
--- OPTION 1: Responder (BATCHED)
--- Supports "Only report MISSING"
+-- DUAL MODE: Buff Check + Buff Removal
+-- Supports "Only report MISSING" and batched removals
 --==============================================================
-
 local mq = require('mq')
 
 ------------------------------------------------------------
 -- Version / Identity
 ------------------------------------------------------------
-local SCRIPT_VERSION = "1.2.0"
+local SCRIPT_VERSION = "1.3.0"
 
 ------------------------------------------------------------
 -- Logging helper
@@ -37,6 +36,15 @@ if not arg or arg == "" then
 end
 
 ------------------------------------------------------------
+-- Mode detection
+------------------------------------------------------------
+local mode = "CHECK" -- default
+if arg:sub(1, 9) == "__REMOVE|" then
+    mode = "REMOVE"
+    arg = arg:sub(10) -- strip prefix
+end
+
+------------------------------------------------------------
 -- Parse args
 ------------------------------------------------------------
 local buffs = {}
@@ -56,7 +64,19 @@ if #buffs == 0 then
 end
 
 ------------------------------------------------------------
--- Buff scan
+-- Mode: REMOVE
+------------------------------------------------------------
+if mode == "REMOVE" then
+    logMessage("REMOVE mode: " .. #buffs .. " buff(s)")
+    for _, buff in ipairs(buffs) do
+        mq.cmdf('/removebuff "%s"', buff)
+        logMessage("Removed: " .. buff)
+    end
+    return
+end
+
+------------------------------------------------------------
+-- Mode: CHECK (original behavior)
 ------------------------------------------------------------
 local MAX_BUFF_SLOTS = 42
 local toonName = mq.TLO.Me.CleanName()
