@@ -19,6 +19,8 @@ Rather than running background scripts on every toon, BuffMonitor operates **on 
 
 This approach avoids persistent monitoring, reduces overhead, and stays aligned with Project Lazarus scripting constraints.
 
+<img width="375" height="692" alt="image" src="https://github.com/user-attachments/assets/89b96900-117c-4032-8bb8-30b1c0b3c895" />
+
 ---
 
 ## Key Features
