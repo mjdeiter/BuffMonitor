@@ -2,7 +2,7 @@
 
 # BuffMonitor (Project Lazarus)
 
-A controller-driven buff auditing tool for the Project Lazarus EverQuest EMU server.
+A [MacroQuest](https://www.macroquest.org/) Lua script for the [Project Lazarus](https://www.lazaruseq.com/) EverQuest emulator server.
 
 ---
 
